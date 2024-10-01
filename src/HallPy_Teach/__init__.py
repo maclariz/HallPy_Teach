@@ -28,7 +28,6 @@ import pyvisa
 from .experiments import curieWeiss, hallEffect
 from IPython.core.display import display
 from IPython.display import clear_output
-import ipywidgets as widgets
 
 from .constants import supportedInstruments, serialRegex
 from .helper import reconnectInstructions, getInstTypeCount, filterArrByKey
@@ -39,7 +38,7 @@ allExperiments = [
 ]
 
 
-def initInstruments(inGui: bool = False):
+def initInstruments():
     """Initializing and recognising connected equipment.
 
     Function does the setup for any of the experiments which use this HallPy_Teach. It recognises the connected
@@ -50,8 +49,6 @@ def initInstruments(inGui: bool = False):
 
     Parameters
     ----------
-    inGui: bool, default=False
-        Bool to check if gui is being used (if using Setup() the whole experiment setup process is done via GUI)
 
     See Also
     --------
@@ -137,7 +134,6 @@ def initInstruments(inGui: bool = False):
     if all(instrumentCount == 0 for instrumentCount in instTypeCount.values()):
         print("\x1b[;43m No instruments could be recognised / contacted \x1b[m")
         print('')
-        reconnectInstructions(inGui)
         raise Exception("No instruments could be recognised / contacted")
     else:
         # Showing connected instruments to user
@@ -148,7 +144,6 @@ def initInstruments(inGui: bool = False):
 
         print(countStr)
         print('')
-        reconnectInstructions(inGui)
 
         # Returning array of instruments : See documentation at the start of the function.
         return instruments
@@ -191,34 +186,12 @@ class Setup:
 
     def __init__(self, btn=None):
 
-        # Getting all experiments in the library
-        expChoices = []
-        for experiment in allExperiments:
-            expChoices.append((experiment.expName, experiment))
-
-        # Setting up UI buttons and dropdowns for later use
-        self.restartSetupBtn = widgets.Button(
-            description="Restart Setup",
-            icon="play",
-            disabled=True
-        )
-        self.pickExpDropdown = widgets.Dropdown(options=expChoices, disabled=False)
-        self.submitBtn = widgets.Button(description="Setup Experiment", icon="flask")
-        self.submitBtn.on_click(self.handle_pickExpSubmit)
-
         # Objects and functions to be used after class instance is set up
         self.expInsts = None
         self.doExperiment = None
 
         clear_output()
-        self.instruments = initInstruments(inGui=True)
-
-        # Getting user input for experiment choice
-        print(" ")
-        print("Choose experiment to perform")
-
-        # noinspection PyTypeChecker
-        display(widgets.VBox([self.pickExpDropdown, self.submitBtn]))
+        self.instruments = initInstruments()
 
     # Getting serial assignment : what instrument is performing what function based on requiredInstruments object
     # defined in the experiment file
